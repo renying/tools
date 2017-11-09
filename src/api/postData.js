@@ -26,6 +26,15 @@ var gateinfo = {
       },
       params: params
     })
+  },
+  checkCode: function (Code) {
+    if (Code === 2) {
+      alert('参数错误，请检查')
+      return false
+    } else if (Code === 7) {
+      alert('用户未登录')
+      return false
+    }
   }
 }
 export default gateinfo

@@ -8,14 +8,14 @@
       </mt-header>
     </div>
     <div class="page-part">
-      <mt-field label="业务代码" :placeholder="test.BusinessCode" type="tel" disabled></mt-field>
-      <mt-field label="业务名称" :placeholder="test.BusinessName" type="password" disabled></mt-field>
-      <mt-field label="原短信通道" :placeholder="test.GateName" type="tel" disabled></mt-field>
+      <mt-field label="业务代码" :placeholder="bInfo.BusinessCode" type="tel" disabled></mt-field>
+      <mt-field label="业务名称" :placeholder="bInfo.BusinessName" type="password" disabled></mt-field>
+      <mt-field label="原短信通道" :placeholder="bInfo.GateName" type="tel" disabled></mt-field>
     </div>
     <div class="change">
       <p>短信通道更改为</p>
       <p>
-        <select >
+        <select v-model="selected">
          <option v-for="item in getGateInfo.GateList" :value="item.GateID">{{item.GateName}}</option>
         </select>
       </p>
@@ -31,22 +31,29 @@ export default {
   name: 'gatechange',
  computed: {
     ...mapGetters([
-      'getGateInfo'
+      'getGateInfo',
+      'getUserInfo'
     ])
   },
   data() {
     return {
-      test: {
-        AutoID: this.$route.params.bCode,
-        BusinessCode: this.$route.params.bCode,
-        BusinessName: 'VIP商城密保卡',
-        GateName: '浙江云锋新通道'
+      selected: 0,
+      bInfo: {
+        AutoID: this.$route.params.a,
+        BusinessCode: this.$route.params.b,
+        BusinessName: this.$route.params.c,
+        GateName: this.$route.params.d
       }
     }
   },
   methods: {
     changeClick: function () {
+      if(this.selected==0){
+        this.$messagebox.alert('请选择切换通道','错误');
+        return;
+      }
       this.$messagebox.confirm('确定执行此操作?', '提示').then(() => {
+
         this.$toast({
           message: '操作成功',
           iconClass: 'mintui mintui-success',
@@ -55,15 +62,18 @@ export default {
         this.$router.push({path: '/tools'});
       })
     },
-    getGate: function () {
-      this.$store.dispatch({
-        type: 'getGateInfo',
-        actionid: 1002
-      })
+    checkLogin () {
+      if(typeof(this.getUserInfo) === 'undefined' || typeof(this.getUserInfo.LCode) ==='undefined') {
+        this.$toast({
+          message: '登录失效',
+          iconClass: 'mintui mintui-field-error',
+          duration: 1500
+        });
+        this.$router.push({path: '/login'});
+      }
     }
   },
   mounted: function () {
-    this.getGate();
   }
 }
 

@@ -19,7 +19,7 @@ export default {
       this.$router.push({path: '/tools'});
     },
     openMore() {
-      this.$router.push({path: '/login'});
+      this.$router.push({path: '/allchange'});
     }
    }
 }

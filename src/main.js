@@ -9,6 +9,7 @@ import Tools from './components/Tools'
 import Login from './components/Login'
 import Index from './components/Index'
 import GateChange from './components/GateChange'
+import GateForAll from './components/GateChangeForAll'
 
 require('es6-promise').polyfill()
 
@@ -18,8 +19,9 @@ const routes = [
   {path: '/', redirect: '/login'},
   {path: '/login', component: Login, name: 'login'},
   {path: '/index', component: Index, name: 'index'},
-  {path: '/justdo/:bCode', component: GateChange, name: 'gatechange'},
-  {path: '/tools', component: Tools, name: 'tools'}
+  {path: '/tools', component: Tools, name: 'tools'},
+  {path: '/justdo/:a/:b/:c/:d', component: GateChange, name: 'gatechange'},
+  {path: '/allchange', component: GateForAll, name: 'changeforall'}
 ]
 const router = new VueRouter({
   routes

@@ -9,15 +9,15 @@
   <div class="btn">
 
    </div>
-   <mt-popup v-model="popupSearch" position="right" class="mint-popup-3" :modal="false">
+   <mt-popup v-model="popupSearch" position="right" class="mint-popup-3">
      <div class="popdiv">
        <div>
-        <mt-field label="业务代码" placeholder="请输入业务代码" type="tel" ></mt-field>
+        <mt-field label="业务代码" placeholder="请输入业务代码" type="tel" v-model="txtcode"></mt-field>
        </div>
        <div>
          <p>短信通道</p>
          <p>
-         <select >
+         <select v-model="selected">
           <option v-for="item in getGateInfo.GateList" :value="item.GateID">{{item.GateName}}</option>
          </select>
          </p>
@@ -26,15 +26,16 @@
         <mt-button @click.native="popupSearch = false"  type="primary">返回</mt-button>
      </div>
    </mt-popup>
-
     <mt-loadmore >
       <ul >
         <li style="font-weight:bold">
           <p >业务代码</p><p>业务名称</p><p>短信通道</p>
         </li>
         <li v-on:click="handleClick" v-for="item in getGateResult.BusinessList">
-          <p>{{item.BusinessCode}}</p><p>{{item.BusinessName}}</p><p>{{item.GateName}}</p>
+          <p >{{item.BusinessCode}}</p><p>{{item.BusinessName}}</p><p>{{item.GateName}}</p>
+          <p style="display:none;" >{{item}}</p>
         </li>
+        <li v-if="getGateResult.BusinessList.length==0">无数据</li>
       </ul>
     </mt-loadmore>
   </div>
@@ -50,35 +51,46 @@ export default {
   computed: {
     ...mapGetters([
       'getGateResult',
-      'getGateInfo'
+      'getGateInfo',
+      'getReload',
+      'getUserInfo'
     ])
   },
   data () {
     return {
       busdata: '',
       popupSearch: false,
-      autoId: 0
+      autoId: 0,
+      selected: 0,
+      txtcode: ''
     }
   },
   methods: {
     // 点击跳转操作
     handleClick (event) {
+      var jdata;
       if(!isNaN(event.target.parentNode.firstElementChild.innerHTML)){
-        this.$router.push({path: '/justdo/' + event.target.parentNode.firstElementChild.innerHTML});
+        jdata= JSON.parse(event.target.parentNode.lastElementChild.innerHTML);
       }
       else{
-        this.$router.push({path: '/justdo/' + event.target.firstElementChild.innerHTML});
+        jdata= JSON.parse(event.target.lastElementChild.innerHTML);
       }
+      this.$router.push({path: '/justdo/' + jdata.AutoID +'/' + jdata.BusinessCode + '/' + encodeURIComponent(jdata.BusinessName) + '/' + encodeURI(jdata.GateName)});
     },
     getResult: function () {
       this.$store.dispatch({
           type: 'getResult',
           actionid: 1001,
-          aid: 0
+          aid: 0,
+          bcode: this.txtcode,
+          gateid: this.selected
       }).then(() => {
+        this.checkLogin();
         this.getGate();
         var Rcount = this.getGateResult.BusinessList.length - 1;
-        this.autoId = this.getGateResult.BusinessList[Rcount].AutoID;
+        if(Rcount > -1){
+          this.autoId = this.getGateResult.BusinessList[Rcount].AutoID;
+         }
       })
     },
     getGate: function () {
@@ -95,20 +107,37 @@ export default {
         this.$store.dispatch({
             type: 'loadMoreResult',
             actionid: 1001,
-            aid: this.autoId
+            aid: this.autoId,
+            bcode: this.txtcode,
+            gateid: this.selected
         }).then(() => {
+          this.checkLogin();
           var Rcount = this.getGateResult.BusinessList.length - 1;
           this.autoId = this.getGateResult.BusinessList[Rcount].AutoID;
         })
       }
     },
     doSearch () {
+      this.getResult();
       this.popupSearch = false;
       this.$toast({
          message: '正在查询...',
          position: 'bottom',
-                                duration: 1000
+         duration: 1000
       });
+    },
+    checkLogin () {
+       if(!this.getReload && (typeof(this.getUserInfo) === 'undefined' || typeof(this.getUserInfo.LCode) ==='undefined')) {
+         this.$toast({
+           message: '登录失效',
+           iconClass: 'mintui mintui-field-error',
+           duration: 1500
+         });
+         //this.$router.push({path: '/login'});
+       }
+       else if (typeof(this.getUserInfo) === 'undefined' || typeof(this.getUserInfo.LCode) ==='undefined'){
+         // todo 需要请求服务端来判断用户是否登录
+       }
     }
   },
   mounted: function () {

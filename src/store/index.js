@@ -14,7 +14,8 @@ Vue.use(MintUI)
 const state = {
   gateResult: {BusinessList: {}, NeedGet: true},
   userinfo: {},
-  smsGateInfo: {}
+  smsGateInfo: {},
+  isreload: true
 }
 const getters = {
   getGateResult: function (state) {
@@ -25,6 +26,9 @@ const getters = {
   },
   getGateInfo: function (state) {
     return state.smsGateInfo
+  },
+  getReload: function (state) {
+    return state.isreload
   }
 }
 const mutations = {
@@ -34,7 +38,8 @@ const mutations = {
   },
   // 设置用户信息
   setUserInfo: function (state, payload) {
-    state.userinfo = payload
+    state.userinfo = payload.ResultObj
+    state.isreload = false
   },
   // 设置短信通道信息
   setGateInfo: function (state, payload) {
@@ -61,7 +66,9 @@ const action = {
   getResult (context, payload) {
     return GetInfo.get({
       actionid: payload.actionid,
-      aid: payload.aid
+      aid: payload.aid,
+      bcode: payload.bcode,
+      gateid: payload.gateid
     }).then(response => {
       let data = response.data
       // 设置结果
@@ -69,7 +76,8 @@ const action = {
         context.commit('setResult', data)
         return true
       } else {
-        throw new Error()
+        context.commit('setUserInfo', {})
+        return false
       }
     })
   },
@@ -83,30 +91,35 @@ const action = {
         context.commit('setGateInfo', data)
         return true
       } else {
-        throw new Error()
+        context.commit('setUserInfo', {})
+        return false
       }
     })
   },
   loginUser (context, payload) {
     return GetInfo.post({
       actionid: payload.actionid,
-      uphone: payload.uphone,
-      ucode: payload.ucode
+      username: payload.uname,
+      password: payload.upassword,
+      mobileno: payload.uphone,
+      checkno: payload.ucode
     }).then(response => {
       let data = response.data
-      // 设置结果
-      if (data.Code === 1) {
-        context.commit('setUserInfo', data)
-        return true
-      } else {
-        throw new Error()
+      if (!GetInfo.checkCode(data.Code)) {
+        // 设置结果
+        if (data.Code === 1) {
+          context.commit('setUserInfo', data)
+          return true
+        }
       }
     })
   },
   loadMoreResult (context, payload) {
     return GetInfo.get({
       actionid: payload.actionid,
-      aid: payload.aid
+      aid: payload.aid,
+      bcode: payload.bcode,
+      gateid: payload.gateid
     }).then(response => {
       let data = response.data
       // 设置结果
@@ -114,7 +127,8 @@ const action = {
         context.commit('setMoreResult', data)
         return true
       } else {
-        throw new Error()
+        context.commit('setUserInfo', {})
+        return false
       }
     })
   }
