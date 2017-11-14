@@ -131,6 +131,14 @@ const action = {
         return false
       }
     })
+  },
+  checkLoginUser (context, payload) {
+    return GetInfo.post({
+      actionid: 1008
+    }).then(response => {
+      let data = response.data
+      return data
+    })
   }
 }
 const store = new Vuex.Store({

@@ -62,7 +62,8 @@ export default {
       popupSearch: false,
       autoId: 0,
       selected: 0,
-      txtcode: ''
+      txtcode: '',
+      isgetdata:true
     }
   },
   methods: {
@@ -104,17 +105,21 @@ export default {
     handleScroll () {
       var currentHeight = document.body.clientHeight - document.documentElement.clientHeight -150;
       if(window.scrollY>currentHeight && this.getGateResult.NeedGet) {
-        this.$store.dispatch({
-            type: 'loadMoreResult',
-            actionid: 1001,
-            aid: this.autoId,
-            bcode: this.txtcode,
-            gateid: this.selected
-        }).then(() => {
-          this.checkLogin();
-          var Rcount = this.getGateResult.BusinessList.length - 1;
-          this.autoId = this.getGateResult.BusinessList[Rcount].AutoID;
-        })
+        if(this.isgetdata){
+          this.isgetdata =false;
+          this.$store.dispatch({
+              type: 'loadMoreResult',
+              actionid: 1001,
+              aid: this.autoId,
+              bcode: this.txtcode,
+              gateid: this.selected
+          }).then(() => {
+            this.isgetdata=true;
+            this.checkLogin();
+            var Rcount = this.getGateResult.BusinessList.length - 1;
+            this.autoId = this.getGateResult.BusinessList[Rcount].AutoID;
+          })
+        }
       }
     },
     doSearch () {
@@ -127,17 +132,35 @@ export default {
       });
     },
     checkLogin () {
-       if(!this.getReload && (typeof(this.getUserInfo) === 'undefined' || typeof(this.getUserInfo.LCode) ==='undefined')) {
-         this.$toast({
-           message: '登录失效',
-           iconClass: 'mintui mintui-field-error',
-           duration: 1500
-         });
-         //this.$router.push({path: '/login'});
-       }
-       else if (typeof(this.getUserInfo) === 'undefined' || typeof(this.getUserInfo.LCode) ==='undefined'){
-         // todo 需要请求服务端来判断用户是否登录
-       }
+      // 刷新后，判断用户登录情况
+      if(!this.getReload && (typeof(this.getUserInfo) === 'undefined' || typeof(this.getUserInfo.LCode) ==='undefined')) {
+        this.$store.dispatch({ type: 'checkLoginUser' }).then( res =>{
+          if(res.Code ===1 && res.ResultObj && res.ResultObj.LCode === 0) {
+            this.getUserInfo = res.ResultObj;
+          }
+          else {
+            this.$toast({
+              message: '登录失效',
+              iconClass: 'mintui mintui-field-error',
+              duration: 1500
+            });
+            this.$router.push({path: '/login'});
+          }
+        });
+      }
+      else if (typeof(this.getUserInfo) === 'undefined' || typeof(this.getUserInfo.LCode) ==='undefined'){
+        this.$store.dispatch({ type: 'checkLoginUser' }).then( res =>{
+          if(res.Code ===1 && res.ResultObj && res.ResultObj.LCode === 0) {
+          } else {
+            this.$toast({
+              message: '登录失效',
+              iconClass: 'mintui mintui-field-error',
+              duration: 1500
+            });
+            this.$router.push({path: '/login'});
+          }
+        });
+      }
     }
   },
   mounted: function () {

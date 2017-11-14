@@ -7,7 +7,7 @@ import axios from 'axios'
 var gateinfo = {
   get: function (params) {
     return axios({
-      method: 'get',
+      method: 'post',
       url: '/PageRequest.ashx',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',

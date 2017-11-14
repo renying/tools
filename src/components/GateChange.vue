@@ -26,10 +26,11 @@
 
 <script type="es6">
 import {mapGetters} from 'vuex';
+import GetInfo from '../api/postData.js'
 
 export default {
   name: 'gatechange',
- computed: {
+  computed: {
     ...mapGetters([
       'getGateInfo',
       'getUserInfo'
@@ -53,23 +54,52 @@ export default {
         return;
       }
       this.$messagebox.confirm('确定执行此操作?', '提示').then(() => {
-
-        this.$toast({
-          message: '操作成功',
-          iconClass: 'mintui mintui-success',
-          duration: 1000
+        GetInfo.post({
+          actionid: 1006,
+          aid: this.bInfo.AutoID,
+          gateid: this.selected
+        }).then(response => {
+          let data =response.data;
+          if(data.Code==1){
+            this.$toast({
+              message: '操作成功',
+              iconClass: 'mintui mintui-success',
+              duration: 1000
+            });
+            this.$router.push({path: '/tools'});
+          }
         });
-        this.$router.push({path: '/tools'});
       })
     },
     checkLogin () {
-      if(typeof(this.getUserInfo) === 'undefined' || typeof(this.getUserInfo.LCode) ==='undefined') {
-        this.$toast({
-          message: '登录失效',
-          iconClass: 'mintui mintui-field-error',
-          duration: 1500
+      // 刷新后，判断用户登录情况
+      if(!this.getReload && (typeof(this.getUserInfo) === 'undefined' || typeof(this.getUserInfo.LCode) ==='undefined')) {
+        this.$store.dispatch({ type: 'checkLoginUser' }).then( res =>{
+          if(res.Code ===1 && res.ResultObj && res.ResultObj.LCode === 0) {
+            this.getUserInfo = res.ResultObj;
+          }
+          else {
+            this.$toast({
+              message: '登录失效',
+              iconClass: 'mintui mintui-field-error',
+              duration: 1500
+            });
+            this.$router.push({path: '/login'});
+          }
         });
-        this.$router.push({path: '/login'});
+      }
+      else if (typeof(this.getUserInfo) === 'undefined' || typeof(this.getUserInfo.LCode) ==='undefined'){
+        this.$store.dispatch({ type: 'checkLoginUser' }).then( res =>{
+          if(res.Code ===1 && res.ResultObj && res.ResultObj.LCode === 0) {
+          } else {
+            this.$toast({
+              message: '登录失效',
+              iconClass: 'mintui mintui-field-error',
+              duration: 1500
+            });
+            this.$router.push({path: '/login'});
+          }
+        });
       }
     }
   },

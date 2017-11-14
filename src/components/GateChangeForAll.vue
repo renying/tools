@@ -1,5 +1,10 @@
 <template>
  <div>
+   <mt-header title="批量通道切换">
+     <router-link to="/index" slot="left">
+         <mt-button icon="back">返回</mt-button>
+       </router-link>
+   </mt-header>
      <div class="change">
        <p>修改前的通道(1)</p>
        <p>
@@ -19,11 +24,11 @@
      <mt-button v-on:click ="changeClick" size="large" type="primary">确认切换</mt-button>
 
      <mt-loadmore >
-       <ul >
+       <ul v-if="selOne != 0" >
          <li style="font-weight:bold">
            <p >业务代码</p><p>业务名称</p><p>短信通道</p>
          </li>
-         <li  v-for="item in getGateResult.BusinessList">
+         <li v-for="item in getGateResult.BusinessList">
            <p >{{item.BusinessCode}}</p><p>{{item.BusinessName}}</p><p>{{item.GateName}}</p>
            <p style="display:none;" >{{item}}</p>
          </li>
@@ -36,6 +41,7 @@
 
 <script type="es6">
 import {mapGetters} from 'vuex';
+import GetInfo from '../api/postData.js'
 
 export default {
   name: 'gateforall',
@@ -51,14 +57,43 @@ export default {
     return {
       selOne: 0,
       selTwo: 0,
-      autoId: 0
+      autoId: 0,
+      isgetdata:true
     }
   },
   methods: {
     changeClick: function () {
-
+      if(this.selOne==0){
+        this.$messagebox.alert('请选择需修改前的通道','错误');
+        return;
+      }
+      if(this.selTwo==0){
+        this.$messagebox.alert('请选择需修改后的通道','错误');
+        return;
+      }
+      this.$messagebox.confirm('确定执行此操作?', '提示').then(() => {
+        GetInfo.post({
+          actionid: 1007,
+          gateid_one: this.selOne,
+          gateid_two: this.selTwo
+        }).then(response => {
+          let data =response.data;
+          if(data.Code==1){
+            this.$toast({
+              message: '操作成功',
+              iconClass: 'mintui mintui-success',
+              duration: 1000
+            });
+            this.selOne = this.selTwo;
+            this.getResult();
+          }
+        });
+      })
     },
     getResult: function () {
+      if(this.selOne === 0) {
+        return;
+      }
       this.$store.dispatch({
           type: 'getResult',
           actionid: 1001,
@@ -81,31 +116,56 @@ export default {
     },
     // 处理上拉自动加载
     handleScroll () {
+      if(this.selOne === 0) {
+        return;
+      }
       var currentHeight = document.body.clientHeight - document.documentElement.clientHeight -150;
       if(window.scrollY>currentHeight && this.getGateResult.NeedGet) {
-        this.$store.dispatch({
-            type: 'loadMoreResult',
-            actionid: 1001,
-            aid: this.autoId,
-            gateid: this.selOne
-        }).then(() => {
-          this.checkLogin();
-          var Rcount = this.getGateResult.BusinessList.length - 1;
-          this.autoId = this.getGateResult.BusinessList[Rcount].AutoID;
-        })
+        if(this.isgetdata){
+          this.isgetdata = false;
+          this.$store.dispatch({
+              type: 'loadMoreResult',
+              actionid: 1001,
+              aid: this.autoId,
+              gateid: this.selOne
+          }).then(() => {
+            this.isgetdata = true;
+            this.checkLogin();
+            var Rcount = this.getGateResult.BusinessList.length - 1;
+            this.autoId = this.getGateResult.BusinessList[Rcount].AutoID;
+          })
+        }
       }
     },
     checkLogin () {
-       if(!this.getReload && (typeof(this.getUserInfo) === 'undefined' || typeof(this.getUserInfo.LCode) ==='undefined')) {
-         this.$toast({
-           message: '登录失效',
-           iconClass: 'mintui mintui-field-error',
-           duration: 1500
-         });
-         //this.$router.push({path: '/login'});
+      // 刷新后，判断用户登录情况
+      if(!this.getReload && (typeof(this.getUserInfo) === 'undefined' || typeof(this.getUserInfo.LCode) ==='undefined')) {
+        this.$store.dispatch({ type: 'checkLoginUser' }).then( res =>{
+          if(res.Code ===1 && res.ResultObj && res.ResultObj.LCode === 0) {
+            this.getUserInfo = res.ResultObj;
+          }
+          else {
+            this.$toast({
+              message: '登录失效',
+              iconClass: 'mintui mintui-field-error',
+              duration: 1500
+            });
+            this.$router.push({path: '/login'});
+          }
+        });
       }
       else if (typeof(this.getUserInfo) === 'undefined' || typeof(this.getUserInfo.LCode) ==='undefined'){
-        // todo 需要请求服务端来判断用户是否登录
+        this.$store.dispatch({ type: 'checkLoginUser' }).then( res =>{
+          if(res.Code ===1 && res.ResultObj && res.ResultObj.LCode === 0) {
+          } else {
+            this.$toast({
+              message: '登录失效',
+              iconClass: 'mintui mintui-field-error',
+              duration: 1500
+            });
+            this.$router.push({path: '/login'});
+          }
+        });
       }
     },
     selChange: function () {
