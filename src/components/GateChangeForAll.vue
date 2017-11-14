@@ -112,6 +112,7 @@ export default {
         type: 'getGateInfo',
         actionid: 1002
       }).then(() => {
+        this.checkLogin();
       })
     },
     // 处理上拉自动加载

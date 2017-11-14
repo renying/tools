@@ -93,6 +93,7 @@ export default {
               iconClass: 'mintui mintui-success',
               duration: 1500
             });
+            GetInfo.post({actionid: 1009,msg:1});
             this.$router.push({path: '/index'});
           }
           else if (this.getUserInfo.LCode === 1) {

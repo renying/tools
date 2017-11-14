@@ -45,6 +45,7 @@
 
 <script type="es6">
 import {mapGetters} from 'vuex';
+import GetInfo from '../api/postData.js'
 
 export default {
   name: 'tools',
@@ -76,6 +77,7 @@ export default {
       else{
         jdata= JSON.parse(event.target.lastElementChild.innerHTML);
       }
+      GetInfo.post({actionid: 1009,msg:4});
       this.$router.push({path: '/justdo/' + jdata.AutoID +'/' + jdata.BusinessCode + '/' + encodeURIComponent(jdata.BusinessName) + '/' + encodeURI(jdata.GateName)});
     },
     getResult: function () {

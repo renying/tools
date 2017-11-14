@@ -11,15 +11,22 @@
 </template>
 
 <script type="es6">
+import GetInfo from '../api/postData.js'
 
 export default {
   name: 'index',
    methods: {
     openOne() {
-      this.$router.push({path: '/tools'});
+      GetInfo.post({actionid: 1009,msg:2}).then(()=>{
+        this.$router.push({path: '/tools'});
+      });
+
     },
     openMore() {
-      this.$router.push({path: '/allchange'});
+      GetInfo.post({actionid: 1009,msg:3}).then(()=>{
+        this.$router.push({path: '/allchange'});
+      });
+
     }
    }
 }

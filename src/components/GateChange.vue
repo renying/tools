@@ -104,6 +104,7 @@ export default {
     }
   },
   mounted: function () {
+    this.checkLogin();
   }
 }
 
