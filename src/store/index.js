@@ -12,7 +12,7 @@ Vue.use(Vuex)
 Vue.use(MintUI)
 
 const state = {
-  gateResult: {BusinessList: {}, NeedGet: true},
+  gateResult: {BusinessList: {}, NeedGet: true, MaxId: 0},
   userinfo: {},
   smsGateInfo: {},
   isreload: true
@@ -35,6 +35,8 @@ const mutations = {
   // 设置列表数据
   setResult: function (state, payload) {
     state.gateResult.BusinessList = payload.ResultObj.BusinessList
+    state.gateResult.NeedGet = true
+    state.gateResult.MaxId = payload.ResultObj.MaxId
   },
   // 设置用户信息
   setUserInfo: function (state, payload) {
@@ -101,7 +103,7 @@ const action = {
       actionid: payload.actionid,
       username: payload.uname,
       password: payload.upassword,
-      mobileno: payload.uphone,
+      // mobileno: payload.uphone,
       checkno: payload.ucode
     }).then(response => {
       let data = response.data
@@ -137,6 +139,9 @@ const action = {
       actionid: 1008
     }).then(response => {
       let data = response.data
+      if (data.Code === 1) {
+        context.commit('setUserInfo', data)
+      }
       return data
     })
   }

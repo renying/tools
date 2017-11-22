@@ -78,7 +78,7 @@ export default {
         jdata= JSON.parse(event.target.lastElementChild.innerHTML);
       }
       GetInfo.post({actionid: 1009,msg:4});
-      this.$router.push({path: '/justdo/' + jdata.AutoID +'/' + jdata.BusinessCode + '/' + encodeURIComponent(jdata.BusinessName) + '/' + encodeURI(jdata.GateName)});
+      this.$router.push({path: '/justdo/' + jdata.AutoID +'/' + jdata.BusinessCode + '/' + encodeURIComponent(jdata.BusinessName) + '/' + encodeURI(jdata.GateName) + '/' + jdata.LongMessage});
     },
     getResult: function () {
       this.$store.dispatch({
@@ -105,8 +105,14 @@ export default {
     },
     // 处理上拉自动加载
     handleScroll () {
+
+      if(this.autoId >(this.getGateResult.MaxId-1)){
+        return;
+      }
       var currentHeight = document.body.clientHeight - document.documentElement.clientHeight -150;
+
       if(window.scrollY>currentHeight && this.getGateResult.NeedGet) {
+
         if(this.isgetdata){
           this.isgetdata =false;
           this.$store.dispatch({
@@ -166,6 +172,7 @@ export default {
     }
   },
   mounted: function () {
+    this.autoId =0;
     this.getResult();
     window.addEventListener('scroll', this.handleScroll);
   }

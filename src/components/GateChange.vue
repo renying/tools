@@ -11,7 +11,14 @@
       <mt-field label="业务代码" :placeholder="bInfo.BusinessCode" type="tel" disabled></mt-field>
       <mt-field label="业务名称" :placeholder="bInfo.BusinessName" type="password" disabled></mt-field>
       <mt-field label="原短信通道" :placeholder="bInfo.GateName" type="tel" disabled></mt-field>
+
     </div>
+
+    <div style="padding-top:10px;">
+      <p style="float:left;width:70%;text-align:left;padding-left:15px;">短信类型：{{msg}}</p>
+      <mt-switch v-model="msgType" @change="handleChange"></mt-switch>
+    </div>
+
     <div class="change">
       <p>短信通道更改为</p>
       <p>
@@ -39,6 +46,8 @@ export default {
   data() {
     return {
       selected: 0,
+      msgType:false,
+      msg:'普通短信',
       bInfo: {
         AutoID: this.$route.params.a,
         BusinessCode: this.$route.params.b,
@@ -57,7 +66,8 @@ export default {
         GetInfo.post({
           actionid: 1006,
           aid: this.bInfo.AutoID,
-          gateid: this.selected
+          gateid: this.selected,
+          msgtype: this.msgType
         }).then(response => {
           let data =response.data;
           if(data.Code==1){
@@ -101,10 +111,21 @@ export default {
           }
         });
       }
+    },
+    handleChange(event) {
+        this.msg = this.msgType?'长短信':'普通短信';
     }
   },
   mounted: function () {
     this.checkLogin();
+    if(this.$route.params.e=='true'){
+      this.msgType=true;
+      this.msg='长短信';
+    }
+    else{
+      this.msg='普通短信';
+      this.msgType=false;
+    }
   }
 }
 
@@ -123,6 +144,11 @@ export default {
         }
       }
     }
+    @component switch {
+          @descendent padding {
+            padding: 0 10px;
+          }
+        }
   }
   .change p{
     float: left;

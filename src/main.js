@@ -20,7 +20,7 @@ const routes = [
   {path: '/login', component: Login, name: 'login'},
   {path: '/index', component: Index, name: 'index'},
   {path: '/tools', component: Tools, name: 'tools'},
-  {path: '/justdo/:a/:b/:c/:d', component: GateChange, name: 'gatechange'},
+  {path: '/justdo/:a/:b/:c/:d/:e', component: GateChange, name: 'gatechange'},
   {path: '/allchange', component: GateForAll, name: 'changeforall'}
 ]
 const router = new VueRouter({
