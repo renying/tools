@@ -2,6 +2,7 @@
 
 > A Vue.js project
 for test
+and save the life
 ## Build Setup
 
 ``` bash
